@@ -1,0 +1,54 @@
+(in-package :paren-events)
+
+;;; Event Handling ;;;
+(defvar *event-table* (create))
+
+(defclass event ()
+  ((origin :accessor event-origin :initarg :origin)
+   (description :accessor event-description :initarg :description))
+  (:documentation "Primitive event class for event observation.  Custom
+event classes are created that subclass the abstract event class.  These are dispatched
+by calling (make-instance some-event-class (create :origin origin ...))."))
+
+(defclass event-emitter ()
+  ((event-handlers :accessor event-handlers :initarg :event-handlers))
+  (:documentation "Subclasses of this can be used in conjunction with EVENT-FIRED and
+REGISTER-EVENT-HANLDER."))
+
+(defgeneric event-fired (within-obj ev)
+  (:documentation "Called when an event was fired within the given object.
+For example, if a button is clicked within a page, then the event will eventually fire
+for the page object with the given event."))
+
+(defgeneric register-event-handler (on-object event-class handler-fun)
+  (:documentation "When an event fires in ON-OBJECT of the given EVENT-CLASS
+HANDLER-FUN will be called with the event as a single argument."))
+
+(defmethod initialize-instance :after ((ev event))
+;  (log "event fired:")
+;  (log (event-origin ev))
+  (event-fired (event-origin ev) ev))
+
+(defmethod register-event-handler ((on-obj event-emitter) event-class handler-func)
+  (let ((obj-observers
+	 (defaultf (slot-value on-obj 'event-handlers) (array))))
+    (methcall :push obj-observers
+	      (create 'handler-func handler-func
+		      'event-class event-class))))
+
+(defun event-handler-fits? (handler ev)
+  "Can the given handler object accept the given event?
+
+True if handler.event-class is a subclass of the class of the given event."
+  (return (psos::is-subclass-of
+	   (slot-value handler 'event-class)  (class-of ev))))
+
+(defmethod event-fired ((within-obj event-emitter) ev)
+  (let ((handlers (and (slot-value within-obj 'event-handlers)
+                       (methcall :filter (slot-value within-obj 'event-handlers)
+				 (lambda (handler)
+				   (return (event-handler-fits? handler ev)))))))
+    (when handlers
+      (dolist (handler handlers)
+        (methcall 'handler-func handler ev))))
+  (call-next-method))
