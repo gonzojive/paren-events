@@ -18,7 +18,8 @@
 			 (:module "paren"
 				  :components
 				  ((:parenscript-file "package")
-				   (:parenscript-file "events" :depends-on ("package")))))))
+				   (:javascript-file "qevent")
+				   (:parenscript-file "events" :depends-on ("package" "qevent")))))))
 
   :depends-on ("parenscript" "closer-mop" "paren-util" "paren-psos"))
 

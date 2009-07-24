@@ -1,5 +1,5 @@
 (defpackage :paren-events
-    (:use :cl :parenscript)
+    (:use :cl :parenscript :paren-util)
   (:export
    ;; parenscript symbols
    #:event
@@ -8,4 +8,9 @@
    #:event-handlers
    #:event-fired
    #:register-event-handler
-   #:event-handler-fits?))
+   #:register-dom-event-handler
+   #:event-handler-fits?
+   #:stop-dom-event))
+
+
+(in-package :paren-events)
