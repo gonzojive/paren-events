@@ -22,6 +22,7 @@
 ;; event types
 (defclass event ()
   ((origin :accessor event-origin :initarg :origin)
+   (cancelled? :accessor event-cancelled? :initform nil)
    (description :accessor event-description :initarg :description))
   (:documentation "Primitive event class for event observation.  Custom
 event classes are created that subclass the abstract event class.  These are dispatched
@@ -60,6 +61,16 @@ HANDLER-FUN will be called with the event as a single argument."))
 (defmethod register-dom-event-handler (on-obj event-str handler-func)
   (methcall :add js-global::-q-event on-obj event-str handler-func))
 
+(defgeneric stop-event (ev)
+  (:documentation "Stops the event from propagating further."))
+
+(defmethod stop-event ((ev event))
+  (setf (event-cancelled? ev) t))
+
+(defmethod stop-event (ev)
+  (stop-dom-event ev))
+  
+
 (defun stop-dom-event (ev)
   "Stops the event from propagating and prevents default behavior."
   (let ((ev (or ev (slot-value js-global:document :event))))
@@ -90,6 +101,7 @@ True if handler.event-class is a subclass of the class of the given event."
 				   (return (event-handler-fits? handler ev)))))))
     (when handlers
       (dolist (handler handlers)
-        (methcall 'handler-func handler ev))))
+	(when (not (event-cancelled? ev))
+	  (methcall 'handler-func handler ev)))))
   (call-next-method))
 
