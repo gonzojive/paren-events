@@ -10,6 +10,7 @@
    #:event-handlers
    #:event-fired
    #:register-event-handler
+   #:unregister-event-handler
    #:register-dom-event-handler
    #:event-handler-fits?
    #:stop-event

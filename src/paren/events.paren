@@ -46,6 +46,9 @@ for the page object with the given event."))
   (:documentation "When an event fires in ON-OBJECT of the given EVENT-CLASS
 HANDLER-FUN will be called with the event as a single argument."))
 
+(defgeneric unregister-event-handler (on-object event-class handler-fun)
+  (:documentation "Removes an event handler."))
+
 (defmethod initialize-instance :after ((ev event))
 ;  (log "event fired:")
 ;  (log (event-origin ev))
@@ -57,6 +60,14 @@ HANDLER-FUN will be called with the event as a single argument."))
     (methcall :push obj-observers
 	      (create 'handler-func handler-func
 		      'event-class event-class))))
+
+(defmethod unregister-event-handler ((on-obj event-emitter) event-class handler-func)
+  (setf (slot-value on-obj 'event-handlers)
+        (methcall 'jsns::filter (or (slot-value on-obj 'event-handlers) (array))
+                  (lambda (observer)
+                    (return (not
+                             (and (=== handler-func (slot-value observer 'handler-func))
+                                  (=== event-class (slot-value observer 'event-class)))))))))
 
 (defmethod register-dom-event-handler (on-obj event-str handler-func)
   (methcall :add js-global::-q-event on-obj event-str handler-func))
