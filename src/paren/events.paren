@@ -70,7 +70,7 @@ HANDLER-FUN will be called with the event as a single argument."))
                                   (=== event-class (slot-value observer 'event-class)))))))))
 
 (defmethod register-dom-event-handler (on-obj event-str handler-func)
-  (methcall :add js-global::-q-event on-obj event-str handler-func))
+  (methcall 'jsns::add js-global::-q-event on-obj event-str handler-func))
 
 (defgeneric stop-event (ev)
   (:documentation "Stops the event from propagating further."))
@@ -84,16 +84,16 @@ HANDLER-FUN will be called with the event as a single argument."))
 
 (defun stop-dom-event (ev)
   "Stops the event from propagating and prevents default behavior."
-  (let ((ev (or ev (slot-value js-global:document :event))))
+  (let ((ev (or ev (slot-value js-global:document 'jsns::event))))
     ;; stop propagation
     (cond 
-      ((slot-value ev :stop-propagation) (methcall :stop-propagation ev))
-      (t     (setf (slot-value ev :cancel-bubble) t)))
+      ((slot-value ev 'jsns::stop-propagation) (methcall 'jsns::stop-propagation ev))
+      (t     (setf (slot-value ev 'jsns::cancel-bubble) t)))
     
     ;; prevent default behavior
     (cond 
-      ((slot-value ev :prevent-default) (methcall :prevent-default ev))
-      (t         (setf (slot-value ev :return-value) false)))))
+      ((slot-value ev 'jsns::prevent-default) (methcall 'jsns::prevent-default ev))
+      (t         (setf (slot-value ev 'jsns::return-value) false)))))
     
 
 
